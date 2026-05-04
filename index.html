@@ -5,16 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SeismoWatch — Live Earthquake Tracker</title>
 
-  <!-- Leaflet.js CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
   <style>
     /* =============================================
        DESIGN SYSTEM — INDUSTRIAL SEISMIC THEME
-       Dark, data-dense, geo-scientific aesthetic
     ============================================= */
     :root {
       --bg:          #0a0c10;
@@ -32,6 +29,8 @@
       --danger-dim:  #ff2d5530;
       --safe:        #00c896;
       --safe-dim:    #00c89620;
+      --user:        #a78bfa;
+      --user-dim:    #a78bfa22;
       --font-display: 'Syne', sans-serif;
       --font-mono:    'DM Mono', monospace;
       --radius:       6px;
@@ -39,7 +38,6 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
 
     body {
@@ -52,47 +50,32 @@
       overflow-x: hidden;
     }
 
-    /* ─── Scanline overlay ─── */
+    /* Scanline overlay */
     body::before {
       content: '';
       position: fixed; inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.08) 2px,
-        rgba(0,0,0,0.08) 4px
-      );
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
       pointer-events: none;
       z-index: 9999;
     }
 
     /* ─── Header ─── */
     header {
-      padding: 20px 24px 16px;
+      padding: 16px 24px;
       border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
       background: var(--surface);
       position: sticky; top: 0; z-index: 500;
     }
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .logo { display: flex; align-items: center; gap: 12px; }
 
     .logo-icon {
       width: 36px; height: 36px;
-      background: var(--accent);
-      border-radius: 50%;
+      background: var(--accent); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
+      font-size: 18px; flex-shrink: 0;
       box-shadow: 0 0 18px var(--accent);
       animation: pulse-glow 3s ease-in-out infinite;
     }
@@ -103,182 +86,159 @@
     }
 
     .logo-text h1 {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--text-bright);
-      letter-spacing: -0.5px;
+      font-family: var(--font-display); font-size: 20px; font-weight: 800;
+      color: var(--text-bright); letter-spacing: -0.5px;
     }
+    .logo-text p { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; }
 
-    .logo-text p {
-      font-size: 11px;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-    }
-
-    .header-status {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
+    .header-status { display: flex; align-items: center; gap: 20px; }
 
     .refresh-timer {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-dim);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      display: flex; align-items: center; gap: 8px;
+      color: var(--text-dim); font-size: 11px;
+      text-transform: uppercase; letter-spacing: 1px;
     }
 
-    #countdown-ring {
-      width: 28px; height: 28px;
-      transform: rotate(-90deg);
-    }
-
-    #countdown-ring circle {
-      fill: none;
-      stroke: var(--border);
-      stroke-width: 3;
-    }
-
+    #countdown-ring { width: 28px; height: 28px; transform: rotate(-90deg); }
+    #countdown-ring circle { fill: none; stroke: var(--border); stroke-width: 3; }
     #countdown-progress {
-      fill: none;
-      stroke: var(--accent);
-      stroke-width: 3;
-      stroke-linecap: round;
-      stroke-dasharray: 69.1;
-      stroke-dashoffset: 0;
+      fill: none; stroke: var(--accent); stroke-width: 3;
+      stroke-linecap: round; stroke-dasharray: 69.1; stroke-dashoffset: 0;
       transition: stroke-dashoffset 1s linear;
     }
 
-    .last-updated {
-      font-size: 11px;
+    .last-updated { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; }
+
+    /* ─── Tab Nav ─── */
+    .tab-nav {
+      display: flex; align-items: center; gap: 2px;
+      padding: 0 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      font-family: var(--font-mono); font-size: 11px;
+      background: none; border: none;
+      border-bottom: 2px solid transparent;
       color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
+      padding: 10px 14px 8px;
+      cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+      transition: color var(--transition), border-color var(--transition);
+      border-radius: 0;
+      display: flex; align-items: center; gap: 6px;
     }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-    /* ─── Main Layout ─── */
-    .app-shell {
-      display: grid;
-      grid-template-columns: 380px 1fr;
-      grid-template-rows: auto 1fr;
-      height: calc(100vh - 73px);
+    .tab-badge {
+      background: var(--accent-dim); color: var(--accent);
+      border-radius: 10px; padding: 1px 6px; font-size: 10px;
     }
+    .tab-badge.warn { background: var(--warn-dim); color: var(--warn); }
 
-    /* ─── Controls Bar ─── */
+    /* ─── Controls ─── */
     .controls {
-      grid-column: 1 / -1;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 24px;
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 24px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       flex-wrap: wrap;
     }
 
-    .control-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .control-group { display: flex; align-items: center; gap: 8px; }
 
     .control-label {
-      font-size: 11px;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      white-space: nowrap;
+      font-size: 11px; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
     }
 
-    select, button {
-      font-family: var(--font-mono);
-      font-size: 12px;
+    /* Search bar */
+    .search-wrap {
+      display: flex; align-items: center;
       background: var(--surface-2);
-      color: var(--text-bright);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 6px 12px;
-      cursor: pointer;
+      padding: 0 10px; gap: 6px;
+      flex: 1; min-width: 160px; max-width: 280px;
+      transition: border-color var(--transition);
+    }
+    .search-wrap:focus-within { border-color: var(--accent); }
+    .search-wrap svg { color: var(--text-dim); flex-shrink: 0; }
+
+    #search-input {
+      font-family: var(--font-mono); font-size: 12px;
+      background: none; border: none;
+      color: var(--text-bright); padding: 6px 0; outline: none; width: 100%;
+    }
+    #search-input::placeholder { color: var(--text-dim); }
+
+    .btn-clear-search {
+      background: none; border: none; padding: 2px;
+      color: var(--text-dim); cursor: pointer;
+      display: none; border-radius: 3px; line-height: 1;
+    }
+    .btn-clear-search.visible { display: flex; align-items: center; }
+    .btn-clear-search:hover { color: var(--text-bright); }
+
+    select, button {
+      font-family: var(--font-mono); font-size: 12px;
+      background: var(--surface-2); color: var(--text-bright);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 6px 12px; cursor: pointer;
       transition: border-color var(--transition), background var(--transition);
-      outline: none;
-      appearance: none;
+      outline: none; appearance: none;
     }
-
-    select:hover, select:focus {
-      border-color: var(--accent);
-    }
-
+    select:hover, select:focus { border-color: var(--accent); }
     select {
       padding-right: 28px;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a6478' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
+      background-repeat: no-repeat; background-position: right 10px center;
     }
 
     .btn-refresh {
-      background: var(--accent-dim);
-      border-color: var(--accent);
-      color: var(--accent);
+      background: var(--accent-dim); border-color: var(--accent); color: var(--accent);
       display: flex; align-items: center; gap: 6px;
     }
-
-    .btn-refresh:hover {
-      background: var(--accent);
-      color: #000;
-    }
-
+    .btn-refresh:hover { background: var(--accent); color: #000; }
     .btn-refresh svg { transition: transform 0.3s ease; }
     .btn-refresh:hover svg { transform: rotate(180deg); }
 
-    .stats-bar {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 20px;
+    .btn-locate {
+      background: var(--user-dim); border-color: var(--user); color: var(--user);
+      display: flex; align-items: center; gap: 6px;
     }
+    .btn-locate:hover { background: var(--user); color: #000; }
+    .btn-locate.locating { animation: blink 0.8s ease-in-out infinite; }
 
-    .stat {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-
-    .stat-value {
-      font-family: var(--font-display);
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text-bright);
-      line-height: 1;
-    }
-
-    .stat-label {
-      font-size: 10px;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 2px;
-    }
-
+    .stats-bar { margin-left: auto; display: flex; align-items: center; gap: 20px; }
+    .stat { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .stat-value { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-bright); line-height: 1; }
+    .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
     .stat-divider { width: 1px; height: 32px; background: var(--border); }
 
-    /* ─── Sidebar / List ─── */
+    /* ─── App Shell ─── */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      height: calc(100vh - 128px);
+    }
+
+    /* ─── Sidebar ─── */
     .sidebar {
       background: var(--surface);
       border-right: 1px solid var(--border);
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
+      position: relative;
     }
-
     .sidebar::-webkit-scrollbar { width: 4px; }
     .sidebar::-webkit-scrollbar-track { background: transparent; }
     .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Tab panels */
+    .tab-panel { display: none; flex-direction: column; flex: 1; }
+    .tab-panel.active { display: flex; }
 
     /* ─── Loading ─── */
     .loading-overlay {
@@ -286,280 +246,261 @@
       background: var(--surface);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 16px;
-      z-index: 100;
+      gap: 16px; z-index: 100;
     }
-
     .loading-overlay.hidden { display: none; }
 
     .loader {
       width: 40px; height: 40px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      border: 3px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .loading-text {
-      font-size: 11px;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 2px;
+      font-size: 11px; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 2px;
       animation: blink 1.2s ease-in-out infinite;
     }
-
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
     /* ─── Error Banner ─── */
     .error-banner {
-      display: none;
-      margin: 12px;
-      padding: 12px 16px;
-      background: var(--danger-dim);
-      border: 1px solid var(--danger);
-      border-radius: var(--radius);
-      color: var(--danger);
-      font-size: 12px;
+      display: none; margin: 12px; padding: 12px 16px;
+      background: var(--danger-dim); border: 1px solid var(--danger);
+      border-radius: var(--radius); color: var(--danger); font-size: 12px;
     }
-
     .error-banner.visible { display: block; }
 
-    /* ─── Earthquake List ─── */
-    #quake-list {
-      list-style: none;
-      flex: 1;
-      position: relative;
-      min-height: 200px;
+    /* ─── Location Notice ─── */
+    .location-notice {
+      display: none; margin: 8px 12px; padding: 10px 14px;
+      background: var(--user-dim); border: 1px solid var(--user);
+      border-radius: var(--radius); color: var(--user); font-size: 11px;
+      align-items: center; gap: 8px;
     }
+    .location-notice.visible { display: flex; }
+    .location-notice span { flex: 1; }
+    .btn-dismiss {
+      background: none; border: none; padding: 0;
+      color: var(--user); cursor: pointer; font-size: 14px; line-height: 1;
+    }
+
+    /* ─── Quake List ─── */
+    #quake-list { list-style: none; flex: 1; position: relative; min-height: 200px; }
 
     .quake-item {
-      display: flex;
-      align-items: stretch;
+      display: flex; align-items: stretch;
       border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background var(--transition);
-      position: relative;
-      overflow: hidden;
-      animation: slide-in 0.25s ease forwards;
-      opacity: 0;
+      cursor: pointer; transition: background var(--transition);
+      position: relative; overflow: hidden;
+      animation: slide-in 0.25s ease forwards; opacity: 0;
     }
-
     @keyframes slide-in {
       from { opacity: 0; transform: translateX(-10px); }
       to   { opacity: 1; transform: translateX(0); }
     }
-
     .quake-item:hover { background: var(--surface-2); }
     .quake-item.active { background: var(--surface-2); }
 
-    /* Left mag band */
-    .mag-band {
-      width: 6px;
-      flex-shrink: 0;
-    }
-
-    .quake-item.mag-safe   .mag-band { background: var(--safe); }
+    .mag-band { width: 6px; flex-shrink: 0; }
+    .quake-item.mag-safe     .mag-band { background: var(--safe); }
     .quake-item.mag-moderate .mag-band { background: var(--warn); }
-    .quake-item.mag-high   .mag-band { background: var(--danger); }
+    .quake-item.mag-high     .mag-band { background: var(--danger); }
 
-    .quake-body {
-      display: flex;
-      flex: 1;
-      padding: 12px 14px;
-      gap: 10px;
-      align-items: center;
-      min-width: 0;
-    }
+    .quake-body { display: flex; flex: 1; padding: 12px 14px; gap: 10px; align-items: center; min-width: 0; }
 
-    /* Mag badge */
     .mag-badge {
-      flex-shrink: 0;
-      width: 46px; height: 46px;
-      border-radius: 50%;
+      flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-display);
-      font-size: 15px;
-      font-weight: 800;
-      border: 2px solid;
+      font-family: var(--font-display); font-size: 15px; font-weight: 800; border: 2px solid;
     }
-
-    .mag-safe   .mag-badge { background: var(--safe-dim);   border-color: var(--safe);   color: var(--safe); }
+    .mag-safe     .mag-badge { background: var(--safe-dim);   border-color: var(--safe);   color: var(--safe); }
     .mag-moderate .mag-badge { background: var(--warn-dim);   border-color: var(--warn);   color: var(--warn); }
-    .mag-high   .mag-badge { background: var(--danger-dim); border-color: var(--danger); color: var(--danger); }
+    .mag-high     .mag-badge { background: var(--danger-dim); border-color: var(--danger); color: var(--danger); }
 
     .quake-info { min-width: 0; flex: 1; }
-
     .quake-place {
-      color: var(--text-bright);
-      font-size: 12px;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 3px;
+      color: var(--text-bright); font-size: 12px; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
     }
-
-    .quake-meta {
-      display: flex;
-      gap: 10px;
-      color: var(--text-dim);
-      font-size: 11px;
-    }
-
+    .quake-place mark { background: var(--accent-dim); color: var(--accent); border-radius: 2px; padding: 0 1px; }
+    .quake-meta { display: flex; gap: 10px; color: var(--text-dim); font-size: 11px; flex-wrap: wrap; }
     .quake-depth::before { content: '↓ '; }
+    .quake-dist { color: var(--user); }
+
+    /* ─── History Panel ─── */
+    #history-list { list-style: none; flex: 1; }
+
+    .history-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      font-size: 11px; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+
+    .btn-clear-history {
+      background: none; border: 1px solid transparent; padding: 3px 8px;
+      color: var(--danger); font-family: var(--font-mono); font-size: 11px;
+      cursor: pointer; border-radius: var(--radius);
+      transition: border-color var(--transition);
+    }
+    .btn-clear-history:hover { border-color: var(--danger); }
+
+    .history-item {
+      display: flex; align-items: stretch;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: background var(--transition);
+      animation: slide-in 0.2s ease forwards; opacity: 0;
+    }
+    .history-item:hover { background: var(--surface-2); }
+
+    .history-body { display: flex; flex: 1; padding: 10px 14px; gap: 10px; align-items: center; min-width: 0; }
+
+    .history-mag {
+      flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 13px; font-weight: 800; border: 2px solid;
+    }
+    .history-mag.safe     { background: var(--safe-dim);   border-color: var(--safe);   color: var(--safe); }
+    .history-mag.moderate { background: var(--warn-dim);   border-color: var(--warn);   color: var(--warn); }
+    .history-mag.high     { background: var(--danger-dim); border-color: var(--danger); color: var(--danger); }
+
+    .history-info { min-width: 0; flex: 1; }
+    .history-place {
+      color: var(--text-bright); font-size: 12px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;
+    }
+    .history-meta { display: flex; gap: 8px; color: var(--text-dim); font-size: 11px; flex-wrap: wrap; }
+    .history-expiry { font-size: 10px; color: var(--text-dim); margin-left: auto; flex-shrink: 0; padding-left: 8px; text-align: right; }
+
+    .history-new-badge {
+      font-size: 9px; background: var(--accent-dim); color: var(--accent);
+      border-radius: 3px; padding: 1px 5px; margin-left: 6px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .history-empty {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px; padding: 48px 24px;
+      color: var(--text-dim); font-size: 12px; text-align: center;
+    }
+    .history-empty .icon { font-size: 32px; opacity: 0.35; }
 
     /* ─── Map ─── */
-    #map {
-      flex: 1;
-      background: #0d1117;
-      position: relative;
-    }
-
-    /* Leaflet dark tile overrides */
+    #map { background: #0d1117; }
     .leaflet-tile { filter: brightness(0.55) saturate(0.4) hue-rotate(195deg); }
     .leaflet-popup-content-wrapper {
-      background: var(--surface-2) !important;
-      border: 1px solid var(--border) !important;
-      border-radius: var(--radius) !important;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
-      color: var(--text) !important;
-      font-family: var(--font-mono) !important;
-      font-size: 12px !important;
+      background: var(--surface-2) !important; border: 1px solid var(--border) !important;
+      border-radius: var(--radius) !important; box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+      color: var(--text) !important; font-family: var(--font-mono) !important; font-size: 12px !important;
     }
-
     .leaflet-popup-tip { background: var(--surface-2) !important; }
     .leaflet-popup-close-button { color: var(--text-dim) !important; }
 
-    .popup-mag {
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 800;
-      line-height: 1;
-    }
-
+    .popup-mag { font-family: var(--font-display); font-size: 28px; font-weight: 800; line-height: 1; }
     .popup-mag.safe     { color: var(--safe); }
     .popup-mag.moderate { color: var(--warn); }
     .popup-mag.high     { color: var(--danger); }
-
     .popup-place { color: var(--text-bright); font-size: 12px; margin: 6px 0 4px; }
     .popup-time  { color: var(--text-dim); font-size: 11px; }
     .popup-depth { color: var(--text-dim); font-size: 11px; margin-top: 2px; }
+    .popup-dist  { color: var(--user); font-size: 11px; margin-top: 2px; }
 
     /* ─── Empty State ─── */
     .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 48px 24px;
-      color: var(--text-dim);
-      font-size: 12px;
-      text-align: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px; padding: 48px 24px;
+      color: var(--text-dim); font-size: 12px; text-align: center;
     }
-
     .empty-state .icon { font-size: 36px; opacity: 0.4; }
 
     /* ─── Legend ─── */
     .legend {
-      padding: 10px 14px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 14px;
-      align-items: center;
-      background: var(--surface);
-      flex-wrap: wrap;
+      padding: 10px 14px; border-top: 1px solid var(--border);
+      display: flex; gap: 14px; align-items: center;
+      background: var(--surface); flex-wrap: wrap; flex-shrink: 0;
     }
-
-    .legend-label {
-      font-size: 10px;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-right: 4px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: var(--text);
-    }
-
-    .legend-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      border: 2px solid;
-    }
-
+    .legend-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-right: 4px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid; }
     .legend-dot.safe     { background: var(--safe-dim);   border-color: var(--safe); }
     .legend-dot.moderate { background: var(--warn-dim);   border-color: var(--warn); }
     .legend-dot.high     { background: var(--danger-dim); border-color: var(--danger); }
+    .legend-dot.me       { background: var(--user-dim);   border-color: var(--user); }
 
     /* ─── Responsive ─── */
     @media (max-width: 768px) {
-      .app-shell {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 320px 1fr;
-        height: auto;
-      }
-
-      .sidebar {
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-        max-height: none;
-        overflow-y: auto;
-      }
-
-      #map {
-        min-height: 300px;
-      }
-
+      .app-shell { grid-template-columns: 1fr; grid-template-rows: 340px 1fr; height: auto; }
+      .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+      #map { min-height: 300px; }
       .stats-bar { margin-left: 0; }
-
-      header { padding: 14px 16px; }
+      header { padding: 12px 16px; }
       .controls { padding: 10px 16px; }
+      .tab-nav { padding: 0 16px; }
     }
-
     @media (max-width: 480px) {
       .logo-text h1 { font-size: 16px; }
-      .stat-value   { font-size: 18px; }
+      .stat-value { font-size: 18px; }
       .stat-divider { display: none; }
+      .search-wrap { max-width: 100%; }
     }
   </style>
 </head>
 <body>
 
-<!-- ════════════════════════ HEADER ════════════════════════ -->
+<!-- ════════════ HEADER ════════════ -->
 <header>
   <div class="logo">
     <div class="logo-icon">🌐</div>
     <div class="logo-text">
       <h1>SeismoWatch</h1>
-      <p>Live Earthquake Tracker · USGS Feed</p>
+      <p>Live Earthquake Tracker · USGS Feed
+        Developed by "dev.mickel"
+      </p>
     </div>
   </div>
-
   <div class="header-status">
     <div class="refresh-timer">
-      <!-- SVG countdown ring -->
       <svg id="countdown-ring" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="11"/>
         <circle id="countdown-progress" cx="12" cy="12" r="11"/>
       </svg>
       <span id="next-refresh-label">60s</span>
     </div>
-    <div class="last-updated">
-      Updated: <span id="last-updated-time">—</span>
-    </div>
+    <div class="last-updated">Updated: <span id="last-updated-time">—</span></div>
   </div>
 </header>
 
-<!-- ════════════════════════ CONTROLS ════════════════════════ -->
+<!-- ════════════ TAB NAV ════════════ -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="live">
+    🔴 Live Feed
+    <span class="tab-badge" id="tab-live-count">—</span>
+  </button>
+  <button class="tab-btn" data-tab="history">
+    🕐 History
+    <span class="tab-badge warn" id="tab-history-count">0</span>
+  </button>
+</nav>
+
+<!-- ════════════ CONTROLS ════════════ -->
 <div class="controls">
+  <!-- Search -->
+  <div class="search-wrap">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" id="search-input" placeholder="Search location…" autocomplete="off" />
+    <button class="btn-clear-search" id="btn-clear-search" title="Clear">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
 
   <div class="control-group">
     <span class="control-label">Min Mag</span>
@@ -581,6 +522,15 @@
       <option value="time-asc">Oldest First</option>
     </select>
   </div>
+
+  <!-- My Location button -->
+  <button class="btn-locate" id="btn-locate" title="Show my location on map">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+      <circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/>
+    </svg>
+    My Location
+  </button>
 
   <button class="btn-refresh" id="btn-refresh" title="Refresh now">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -607,142 +557,361 @@
   </div>
 </div>
 
-<!-- ════════════════════════ MAIN SHELL ════════════════════════ -->
+<!-- ════════════ APP SHELL ════════════ -->
 <div class="app-shell">
 
   <!-- Sidebar -->
   <aside class="sidebar">
-    <!-- Error banner -->
-    <div class="error-banner" id="error-banner">
-      ⚠ Failed to load earthquake data. Check your connection and try again.
+
+    <!-- ── LIVE PANEL ── -->
+    <div class="tab-panel active" id="panel-live">
+      <div class="error-banner" id="error-banner">⚠ Failed to load earthquake data. Check your connection and try again.</div>
+
+      <!-- Location notice bar -->
+      <div class="location-notice" id="location-notice">
+        <span>📍 <span id="location-text">Locating…</span></span>
+        <button class="btn-dismiss" id="btn-dismiss-loc" title="Dismiss">✕</button>
+      </div>
+
+      <ul id="quake-list">
+        <li class="loading-overlay" id="loading-overlay">
+          <div class="loader"></div>
+          <span class="loading-text">Fetching seismic data…</span>
+        </li>
+      </ul>
+
+      <div class="legend">
+        <span class="legend-label">Mag</span>
+        <div class="legend-item"><div class="legend-dot safe"></div> &lt; 5.0</div>
+        <div class="legend-item"><div class="legend-dot moderate"></div> 5.0–6.9</div>
+        <div class="legend-item"><div class="legend-dot high"></div> ≥ 7.0</div>
+        <div class="legend-item"><div class="legend-dot me"></div> You</div>
+      </div>
     </div>
 
-    <!-- List (loading overlay is inside) -->
-    <ul id="quake-list">
-      <li class="loading-overlay" id="loading-overlay">
-        <div class="loader"></div>
-        <span class="loading-text">Fetching seismic data…</span>
-      </li>
-    </ul>
-
-    <!-- Legend -->
-    <div class="legend">
-      <span class="legend-label">Mag</span>
-      <div class="legend-item"><div class="legend-dot safe"></div> &lt; 5.0</div>
-      <div class="legend-item"><div class="legend-dot moderate"></div> 5.0 – 6.9</div>
-      <div class="legend-item"><div class="legend-dot high"></div> ≥ 7.0</div>
+    <!-- ── HISTORY PANEL ── -->
+    <div class="tab-panel" id="panel-history">
+      <div class="history-header">
+        <span>Viewed · Expires in 24h</span>
+        <button class="btn-clear-history" id="btn-clear-history">Clear All</button>
+      </div>
+      <ul id="history-list"></ul>
     </div>
+
   </aside>
 
   <!-- Map -->
   <div id="map"></div>
 </div>
 
-<!-- ════════════════════════ SCRIPTS ════════════════════════ -->
+<!-- ════════════ SCRIPTS ════════════ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 /* ============================================================
-   SeismoWatch — Main Application Script
-   Data source: USGS Earthquake Hazards Program GeoJSON Feed
-   Refresh: every 60 seconds
+   SeismoWatch — Main Application
+   New features:
+   · My Location — geolocation marker + distance to each quake
+   · Search bar  — real-time filter by place name with highlight
+   · History tab — 24h viewed log stored in localStorage
 ============================================================ */
 
-const API_URL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson';
-const REFRESH_INTERVAL = 60; // seconds
+const API_URL          = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson';
+const REFRESH_INTERVAL = 60;                  // seconds
+const HISTORY_KEY      = 'seismo_history_v1';
+const HISTORY_TTL      = 24 * 60 * 60 * 1000; // 24 hours in ms
 
 // ── State ──────────────────────────────────────────────────
-let allQuakes    = [];   // raw data from API
-let markers      = {};   // leaflet markers keyed by quake id
-let activeId     = null; // currently selected quake id
-let countdown    = REFRESH_INTERVAL;
+let allQuakes   = [];
+let markers     = {};
+let activeId    = null;
+let countdown   = REFRESH_INTERVAL;
 let countdownTimer;
+let userLatLng  = null;   // { lat, lng } once located
+let userMarker  = null;   // Leaflet marker for user
+let searchQuery = '';
+let currentTab  = 'live';
 
-// ── DOM Refs ───────────────────────────────────────────────
-const listEl         = document.getElementById('quake-list');
-const loadingEl      = document.getElementById('loading-overlay');
-const errorEl        = document.getElementById('error-banner');
-const lastUpdatedEl  = document.getElementById('last-updated-time');
-const statTotal      = document.getElementById('stat-total');
-const statMax        = document.getElementById('stat-max');
-const statSig        = document.getElementById('stat-significant');
-const filterMagEl    = document.getElementById('filter-mag');
-const sortOrderEl    = document.getElementById('sort-order');
-const btnRefresh     = document.getElementById('btn-refresh');
-const progressRing   = document.getElementById('countdown-progress');
-const nextRefLabel   = document.getElementById('next-refresh-label');
-const RING_CIRCUM    = 2 * Math.PI * 11; // r=11 → ≈ 69.1
+// ── DOM refs ───────────────────────────────────────────────
+const listEl          = document.getElementById('quake-list');
+const historyListEl   = document.getElementById('history-list');
+const loadingEl       = document.getElementById('loading-overlay');
+const errorEl         = document.getElementById('error-banner');
+const locationNotice  = document.getElementById('location-notice');
+const locationText    = document.getElementById('location-text');
+const lastUpdatedEl   = document.getElementById('last-updated-time');
+const statTotal       = document.getElementById('stat-total');
+const statMax         = document.getElementById('stat-max');
+const statSig         = document.getElementById('stat-significant');
+const filterMagEl     = document.getElementById('filter-mag');
+const sortOrderEl     = document.getElementById('sort-order');
+const btnRefresh      = document.getElementById('btn-refresh');
+const btnLocate       = document.getElementById('btn-locate');
+const btnDismissLoc   = document.getElementById('btn-dismiss-loc');
+const searchInput     = document.getElementById('search-input');
+const btnClearSearch  = document.getElementById('btn-clear-search');
+const btnClearHistory = document.getElementById('btn-clear-history');
+const tabLiveCount    = document.getElementById('tab-live-count');
+const tabHistoryCount = document.getElementById('tab-history-count');
+const progressRing    = document.getElementById('countdown-progress');
+const nextRefLabel    = document.getElementById('next-refresh-label');
+const RING_CIRCUM     = 2 * Math.PI * 11; // ≈ 69.1
 
-// ── Leaflet Map Setup ──────────────────────────────────────
-const map = L.map('map', {
-  center: [20, 0],
-  zoom: 2,
-  zoomControl: true,
-  attributionControl: true,
-});
-
+// ── Map ────────────────────────────────────────────────────
+const map = L.map('map', { center: [20, 0], zoom: 2 });
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   maxZoom: 18,
 }).addTo(map);
 
-// ── Helpers ────────────────────────────────────────────────
+// ── Pure Helpers ───────────────────────────────────────────
 
-/**
- * Returns a CSS class and colour based on magnitude.
- */
+/** Severity class + colour for a magnitude value */
 function magClass(mag) {
-  if (mag >= 7.0) return { cls: 'mag-high',     hex: '#ff2d55' };
-  if (mag >= 5.0) return { cls: 'mag-moderate',  hex: '#ff6b35' };
-  return               { cls: 'mag-safe',        hex: '#00c896' };
+  if (mag >= 7.0) return { cls: 'mag-high',    pop: 'high',     hex: '#ff2d55' };
+  if (mag >= 5.0) return { cls: 'mag-moderate', pop: 'moderate', hex: '#ff6b35' };
+  return               { cls: 'mag-safe',       pop: 'safe',     hex: '#00c896' };
 }
 
-/**
- * Creates a circular SVG marker icon for Leaflet.
- */
+/** Leaflet DivIcon: pulse circle sized by magnitude */
 function makeIcon(mag) {
   const { hex } = magClass(mag);
-  const r = Math.min(8 + mag * 3, 28); // radius grows with magnitude
+  const r    = Math.min(8 + mag * 3, 28);
   const size = r * 2 + 6;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  const svg  = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
     <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="${hex}44" stroke="${hex}" stroke-width="2"/>
-    <circle cx="${size/2}" cy="${size/2}" r="${r * 0.4}" fill="${hex}"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r*0.4}" fill="${hex}"/>
   </svg>`;
-  return L.divIcon({
-    html: svg,
-    className: '',
-    iconSize:   [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
+  return L.divIcon({ html: svg, className: '', iconSize: [size, size], iconAnchor: [size/2, size/2] });
 }
 
-/**
- * Converts a UNIX ms timestamp to a human-readable string.
- */
+/** Leaflet DivIcon: animated user position dot */
+function makeUserIcon() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+    <circle cx="14" cy="14" r="11" fill="#a78bfa22" stroke="#a78bfa" stroke-width="1.5">
+      <animate attributeName="r" values="7;12;7" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.2;1" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="14" cy="14" r="5" fill="#a78bfa" stroke="#fff" stroke-width="1.5"/>
+  </svg>`;
+  return L.divIcon({ html: svg, className: '', iconSize: [28, 28], iconAnchor: [14, 14] });
+}
+
+/** Format UNIX ms → locale date-time string */
 function formatTime(ms) {
-  const d = new Date(ms);
-  return d.toLocaleString(undefined, {
+  return new Date(ms).toLocaleString(undefined, {
     month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit', second: '2-digit',
   });
 }
 
-/**
- * Returns a relative time string ("3m ago", "just now", etc.)
- */
+/** "3m ago", "just now", etc. */
 function relativeTime(ms) {
-  const diff = Date.now() - ms;
-  const s = Math.floor(diff / 1000);
-  if (s < 10)  return 'just now';
-  if (s < 60)  return `${s}s ago`;
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  return `${Math.floor(s / 3600)}h ago`;
+  const s = Math.floor((Date.now() - ms) / 1000);
+  if (s < 10)    return 'just now';
+  if (s < 60)    return `${s}s ago`;
+  if (s < 3600)  return `${Math.floor(s/60)}m ago`;
+  if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+  return `${Math.floor(s/86400)}d ago`;
 }
 
-// ── Fetch Data ─────────────────────────────────────────────
+/** How long until a history entry expires */
+function timeUntilExpiry(storedAt) {
+  const remaining = HISTORY_TTL - (Date.now() - storedAt);
+  if (remaining <= 0) return 'expired';
+  const h = Math.floor(remaining / 3_600_000);
+  const m = Math.floor((remaining % 3_600_000) / 60_000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+/** Haversine distance in km */
+function distKm(lat1, lng1, lat2, lng2) {
+  const R  = 6371;
+  const dL = (lat2 - lat1) * Math.PI / 180;
+  const dN = (lng2 - lng1) * Math.PI / 180;
+  const a  = Math.sin(dL/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dN/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+/** Wrap search match in <mark> tags */
+function highlight(text, query) {
+  if (!query) return text;
+  const esc = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp(`(${esc})`, 'gi'), '<mark>$1</mark>');
+}
+
+// ── History — localStorage with 24h TTL ───────────────────
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const entries = JSON.parse(raw);
+    const fresh   = entries.filter(e => Date.now() - e.storedAt < HISTORY_TTL);
+    if (fresh.length !== entries.length) _saveHistory(fresh); // prune expired
+    return fresh;
+  } catch { return []; }
+}
+
+function _saveHistory(entries) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(entries.slice(0, 200))); } catch {}
+}
+
+/**
+ * Record a viewed quake. If already present, refresh its storedAt so
+ * the 24h window resets from the last time it was clicked.
+ */
+function addToHistory(q) {
+  const entries = loadHistory();
+  const idx = entries.findIndex(e => e.id === q.id);
+  const entry = {
+    id:       q.id,
+    mag:      q.properties.mag,
+    place:    q.properties.place,
+    time:     q.properties.time,
+    depth:    q.geometry?.coordinates?.[2],
+    lat:      q.geometry?.coordinates?.[1],
+    lng:      q.geometry?.coordinates?.[0],
+    storedAt: Date.now(),
+  };
+  if (idx >= 0) entries[idx] = entry;
+  else          entries.unshift(entry);
+  _saveHistory(entries);
+  tabHistoryCount.textContent = entries.length;
+  if (currentTab === 'history') renderHistory();
+}
+
+function clearHistory() {
+  _saveHistory([]);
+  renderHistory();
+}
+
+function renderHistory() {
+  const entries = loadHistory();
+  tabHistoryCount.textContent = entries.length;
+  historyListEl.innerHTML = '';
+
+  if (!entries.length) {
+    historyListEl.innerHTML = `
+      <li><div class="history-empty">
+        <div class="icon">📭</div>
+        No earthquakes viewed yet.<br>
+        Click any earthquake to record it here.<br>
+        Entries auto-expire after 24 hours.
+      </div></li>`;
+    return;
+  }
+
+  entries.forEach((e, i) => {
+    const mag  = e.mag !== null ? e.mag.toFixed(1) : '?';
+    const { pop } = magClass(e.mag || 0);
+    const depth   = e.depth !== undefined ? e.depth.toFixed(1) : '?';
+    const expiry  = timeUntilExpiry(e.storedAt);
+    const isNew   = Date.now() - e.storedAt < 60_000;
+
+    let distStr = '';
+    if (userLatLng && e.lat != null && e.lng != null) {
+      const km = distKm(userLatLng.lat, userLatLng.lng, e.lat, e.lng);
+      distStr = `<span class="quake-dist">~ ${km < 100 ? km.toFixed(0) : Math.round(km)} km</span>`;
+    }
+
+    const li = document.createElement('li');
+    li.className = 'history-item';
+    li.style.animationDelay = `${i * 20}ms`;
+    li.innerHTML = `
+      <div class="mag-band" style="width:5px;background:${pop==='safe'?'var(--safe)':pop==='moderate'?'var(--warn)':'var(--danger)'}"></div>
+      <div class="history-body">
+        <div class="history-mag ${pop}">${mag}</div>
+        <div class="history-info">
+          <div class="history-place">
+            ${e.place || 'Unknown location'}
+            ${isNew ? '<span class="history-new-badge">new</span>' : ''}
+          </div>
+          <div class="history-meta">
+            <span>${relativeTime(e.time)}</span>
+            <span>↓ ${depth} km</span>
+            ${distStr}
+          </div>
+        </div>
+        <div class="history-expiry" title="Time until this entry expires">${expiry}</div>
+      </div>`;
+
+    // Click → fly map to that location
+    li.addEventListener('click', () => {
+      if (e.lat != null && e.lng != null) {
+        map.flyTo([e.lat, e.lng], 7, { duration: 0.9 });
+        switchTab('live');
+      }
+    });
+
+    historyListEl.appendChild(li);
+  });
+}
+
+// ── My Location ────────────────────────────────────────────
+
+function locateUser() {
+  if (!navigator.geolocation) {
+    showLocNotice('Geolocation not supported by your browser.');
+    return;
+  }
+
+  btnLocate.classList.add('locating');
+  btnLocate.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg> Locating…`;
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      userLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+
+      // Button reset
+      btnLocate.classList.remove('locating');
+      btnLocate.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg> Located ✓`;
+
+      // Pulsing user marker
+      if (userMarker) map.removeLayer(userMarker);
+      userMarker = L.marker([userLatLng.lat, userLatLng.lng], {
+        icon: makeUserIcon(), zIndexOffset: 1000,
+      })
+        .bindPopup(`<div style="color:var(--user,#a78bfa);font-weight:600;font-size:13px;">📍 Your Location</div><div style="color:#888;font-size:11px;margin-top:4px;">${userLatLng.lat.toFixed(5)}, ${userLatLng.lng.toFixed(5)}</div>`)
+        .addTo(map);
+
+      map.flyTo([userLatLng.lat, userLatLng.lng], 8, { duration: 1.2 });
+
+      locationText.textContent = `${userLatLng.lat.toFixed(4)}, ${userLatLng.lng.toFixed(4)}`;
+      locationNotice.classList.add('visible');
+
+      // Re-render list to show distances
+      renderAll();
+      renderHistory();
+    },
+    (err) => {
+      btnLocate.classList.remove('locating');
+      btnLocate.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg> My Location`;
+      const msgs = { 1: 'Location access denied.', 2: 'Position unavailable.', 3: 'Request timed out.' };
+      showLocNotice(msgs[err.code] || 'Could not get location.');
+    },
+    { enableHighAccuracy: true, timeout: 10_000 }
+  );
+}
+
+function showLocNotice(msg) {
+  locationText.textContent = msg;
+  locationNotice.classList.add('visible');
+}
+
+// ── Tab Switching ──────────────────────────────────────────
+
+function switchTab(tabId) {
+  currentTab = tabId;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tabId}`));
+  if (tabId === 'history') renderHistory();
+}
+
+// ── Fetch ──────────────────────────────────────────────────
+
 async function fetchQuakes() {
   showLoading(true);
   hideError();
-
   try {
     const res  = await fetch(API_URL);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -759,14 +928,18 @@ async function fetchQuakes() {
 }
 
 // ── Render ─────────────────────────────────────────────────
+
 function renderAll() {
-  const minMag = parseFloat(filterMagEl.value);
-  const sort   = sortOrderEl.value;
+  const minMag  = parseFloat(filterMagEl.value);
+  const sort    = sortOrderEl.value;
+  const q_lower = searchQuery.toLowerCase().trim();
 
   // Filter
   let quakes = allQuakes.filter(q => {
     const m = q.properties.mag;
-    return m !== null && m >= minMag;
+    if (m === null || m < minMag) return false;
+    if (q_lower && !(q.properties.place || '').toLowerCase().includes(q_lower)) return false;
+    return true;
   });
 
   // Sort
@@ -785,48 +958,56 @@ function renderAll() {
   const maxM  = mags.length ? Math.max(...mags).toFixed(1) : '—';
   const sigCt = mags.filter(m => m >= 5.0).length;
 
-  statTotal.textContent = quakes.length;
-  statMax.textContent   = maxM;
-  statSig.textContent   = sigCt;
+  statTotal.textContent    = quakes.length;
+  statMax.textContent      = maxM;
+  statSig.textContent      = sigCt;
+  tabLiveCount.textContent = quakes.length;
 
   renderList(quakes);
   renderMarkers(quakes);
 }
 
 function renderList(quakes) {
-  // Clear old items (keep loading overlay)
-  Array.from(listEl.querySelectorAll('.quake-item')).forEach(el => el.remove());
+  Array.from(listEl.querySelectorAll('.quake-item, .empty-state')).forEach(el => el.remove());
 
   if (!quakes.length) {
     const empty = document.createElement('li');
     empty.className = 'empty-state';
-    empty.innerHTML = '<div class="icon">🔇</div><div>No earthquakes match the current filter.</div>';
+    empty.innerHTML = `<div class="icon">🔇</div><div>No earthquakes match${searchQuery ? ' your search' : ' the current filter'}.</div>`;
     listEl.appendChild(empty);
     return;
   }
 
   quakes.forEach((q, i) => {
-    const p   = q.properties;
-    const mag = p.mag !== null ? p.mag.toFixed(1) : '?';
+    const p      = q.properties;
+    const mag    = p.mag !== null ? p.mag.toFixed(1) : '?';
     const { cls } = magClass(p.mag || 0);
-    const coords  = q.geometry.coordinates; // [lng, lat, depth]
-    const depth   = coords ? coords[2]?.toFixed(1) : '?';
+    const coords = q.geometry?.coordinates;
+    const depth  = coords ? coords[2]?.toFixed(1) : '?';
+    const place  = p.place || 'Unknown location';
+
+    // Distance from user
+    let distStr = '';
+    if (userLatLng && coords) {
+      const km = distKm(userLatLng.lat, userLatLng.lng, coords[1], coords[0]);
+      distStr = `<span class="quake-dist">~ ${km < 100 ? km.toFixed(0) : Math.round(km)} km</span>`;
+    }
 
     const li = document.createElement('li');
     li.className = `quake-item ${cls}`;
     if (q.id === activeId) li.classList.add('active');
-    li.style.animationDelay = `${i * 30}ms`;
+    li.style.animationDelay = `${i * 25}ms`;
     li.dataset.id = q.id;
-
     li.innerHTML = `
       <div class="mag-band"></div>
       <div class="quake-body">
         <div class="mag-badge">${mag}</div>
         <div class="quake-info">
-          <div class="quake-place" title="${p.place || 'Unknown location'}">${p.place || 'Unknown location'}</div>
+          <div class="quake-place" title="${place}">${highlight(place, searchQuery)}</div>
           <div class="quake-meta">
             <span>${relativeTime(p.time)}</span>
             <span class="quake-depth">${depth} km</span>
+            ${distStr}
           </div>
         </div>
       </div>`;
@@ -837,13 +1018,9 @@ function renderList(quakes) {
 }
 
 function renderMarkers(quakes) {
-  // Remove markers no longer in filtered set
   const visibleIds = new Set(quakes.map(q => q.id));
   Object.keys(markers).forEach(id => {
-    if (!visibleIds.has(id)) {
-      map.removeLayer(markers[id]);
-      delete markers[id];
-    }
+    if (!visibleIds.has(id)) { map.removeLayer(markers[id]); delete markers[id]; }
   });
 
   quakes.forEach(q => {
@@ -851,23 +1028,28 @@ function renderMarkers(quakes) {
     if (!coords) return;
 
     const [lng, lat, depth] = coords;
-    const p   = q.properties;
-    const mag = p.mag !== null ? p.mag.toFixed(1) : '?';
-    const { cls } = magClass(p.mag || 0);
+    const p        = q.properties;
+    const mag      = p.mag !== null ? p.mag.toFixed(1) : '?';
+    const { pop }  = magClass(p.mag || 0);
     const depthStr = depth !== undefined ? depth.toFixed(1) : '?';
 
+    let distStr = '';
+    if (userLatLng) {
+      const km = distKm(userLatLng.lat, userLatLng.lng, lat, lng);
+      distStr = `<div class="popup-dist">~ ${km < 100 ? km.toFixed(0) : Math.round(km)} km from you</div>`;
+    }
+
     if (markers[q.id]) {
-      // Update icon in case mag changed
       markers[q.id].setIcon(makeIcon(p.mag || 0));
     } else {
       const marker = L.marker([lat, lng], { icon: makeIcon(p.mag || 0) });
       marker.bindPopup(`
-        <div class="popup-mag ${cls === 'mag-safe' ? 'safe' : cls === 'mag-moderate' ? 'moderate' : 'high'}">${mag}</div>
+        <div class="popup-mag ${pop}">${mag}</div>
         <div class="popup-place">${p.place || 'Unknown location'}</div>
         <div class="popup-time">${formatTime(p.time)}</div>
         <div class="popup-depth">Depth: ${depthStr} km</div>
+        ${distStr}
       `, { maxWidth: 240 });
-
       marker.on('click', () => selectQuake(q));
       marker.addTo(map);
       markers[q.id] = marker;
@@ -875,80 +1057,85 @@ function renderMarkers(quakes) {
   });
 }
 
-/**
- * Selects a quake — highlights list item, pans map, opens popup.
- */
+/** Select a quake: highlight list row, fly map, open popup, log to history */
 function selectQuake(q) {
-  // Deselect previous
   if (activeId) {
     const prev = listEl.querySelector(`[data-id="${activeId}"]`);
     if (prev) prev.classList.remove('active');
   }
-
   activeId = q.id;
 
-  // Highlight list item
   const el = listEl.querySelector(`[data-id="${activeId}"]`);
-  if (el) {
-    el.classList.add('active');
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
+  if (el) { el.classList.add('active'); el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
 
-  // Pan map & open popup
   const coords = q.geometry?.coordinates;
   if (coords && markers[q.id]) {
     map.flyTo([coords[1], coords[0]], Math.max(map.getZoom(), 5), { duration: 0.8 });
     markers[q.id].openPopup();
   }
+
+  // Add to 24h history
+  addToHistory(q);
 }
 
 // ── UI Helpers ─────────────────────────────────────────────
-function showLoading(state) {
-  loadingEl.classList.toggle('hidden', !state);
-}
+function showLoading(state) { loadingEl.classList.toggle('hidden', !state); }
+function showError()  { errorEl.classList.add('visible'); }
+function hideError()  { errorEl.classList.remove('visible'); }
 
-function showError() {
-  errorEl.classList.add('visible');
-}
-
-function hideError() {
-  errorEl.classList.remove('visible');
-}
-
-// ── Countdown Ring ─────────────────────────────────────────
+// ── Countdown ──────────────────────────────────────────────
 function startCountdown() {
   clearInterval(countdownTimer);
   countdown = REFRESH_INTERVAL;
   updateRing();
-
   countdownTimer = setInterval(() => {
     countdown--;
     updateRing();
-    if (countdown <= 0) {
-      countdown = REFRESH_INTERVAL;
-      fetchQuakes();
-    }
+    if (countdown <= 0) { countdown = REFRESH_INTERVAL; fetchQuakes(); }
   }, 1000);
 }
 
 function updateRing() {
-  const frac = countdown / REFRESH_INTERVAL;
-  const offset = RING_CIRCUM * (1 - frac);
-  progressRing.style.strokeDashoffset = offset;
+  progressRing.style.strokeDashoffset = RING_CIRCUM * (1 - countdown / REFRESH_INTERVAL);
   nextRefLabel.textContent = `${countdown}s`;
 }
 
-// ── Event Listeners ────────────────────────────────────────
+// Refresh history expiry labels every minute
+setInterval(() => { if (currentTab === 'history') renderHistory(); }, 60_000);
+
+// ── Events ─────────────────────────────────────────────────
 filterMagEl.addEventListener('change', renderAll);
 sortOrderEl.addEventListener('change', renderAll);
 
-btnRefresh.addEventListener('click', () => {
-  fetchQuakes();
-  startCountdown();
+btnRefresh.addEventListener('click', () => { fetchQuakes(); startCountdown(); });
+btnLocate.addEventListener('click', locateUser);
+btnDismissLoc.addEventListener('click', () => locationNotice.classList.remove('visible'));
+
+searchInput.addEventListener('input', () => {
+  searchQuery = searchInput.value;
+  btnClearSearch.classList.toggle('visible', searchQuery.length > 0);
+  renderAll();
+});
+
+btnClearSearch.addEventListener('click', () => {
+  searchInput.value = '';
+  searchQuery = '';
+  btnClearSearch.classList.remove('visible');
+  searchInput.focus();
+  renderAll();
+});
+
+btnClearHistory.addEventListener('click', () => {
+  if (confirm('Clear all viewed earthquake history?')) clearHistory();
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
 // ── Boot ───────────────────────────────────────────────────
 (function init() {
+  renderHistory();
   fetchQuakes();
   startCountdown();
 })();
