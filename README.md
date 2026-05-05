@@ -6,7 +6,7 @@ A frontend-only, single-file web application that displays real-time earthquake 
 
 ---
 
-## Features
+## Features (5.4.2026.v1.000001)
 
 - **Live USGS data** — fetches from the [USGS All Earthquakes (Past Hour)](https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson) GeoJSON feed
 - **Auto-refresh** every 60 seconds with an animated countdown ring
@@ -18,6 +18,17 @@ A frontend-only, single-file web application that displays real-time earthquake 
 - **Live stats bar** — total shown, maximum magnitude, count of significant quakes (≥ 5.0)
 - **Loading indicator**, graceful error banner, and empty state for filtered results
 - **Fully responsive** — works on desktop, tablet, and mobile
+
+---
+
+## New Features (5.5.2026.v1.000002)
+
+- 🇵🇭 PH Earthquakes tab — USGS data filtered exclusively to the Philippines, with time range switcher: Last 24h / 48h / 7 Days / 30 Days (historical)
+- Historical vs. recent visual distinction — quakes older than 48h get dashed, faded markers and a "Historical" badge; fresh quakes within 1h get a red "New" badge
+- 🌋 Volcanoes tab — All 24 PHIVOLCS-monitored volcanoes sorted by alert level, with colored alert badges (0–5 scale), status text, province, type, and a link to the official PHIVOLCS bulletin for each
+- Volcano map markers — Triangle icons on the map colored by alert level; clicking opens a popup with full details and a PHIVOLCS link
+- 🌐 Global Live tab — The existing USGS hour feed, now with a "PH" badge on any event that falls within Philippine coordinates
+- 🕐 History tab — Unchanged 24h auto-expiring viewed log
 
 ---
 
@@ -115,4 +126,5 @@ Works in all modern browsers (Chrome, Firefox, Safari, Edge). Requires JavaScrip
 
 ## License
 
-MIT — free to use, modify, and deploy.
+This project is free to use for learning and personal projects only.
+Commercial use, redistribution, and modification for profit are not allowed without permission.
