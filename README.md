@@ -126,4 +126,5 @@ Works in all modern browsers (Chrome, Firefox, Safari, Edge). Requires JavaScrip
 
 ## License
 
-MIT — free to use, modify, and deploy.
+This project is free to use for learning and personal projects only.
+Commercial use, redistribution, and modification for profit are not allowed without permission.
