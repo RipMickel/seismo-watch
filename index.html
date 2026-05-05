@@ -309,11 +309,41 @@
     .ld-hist{width:9px;height:9px;border-radius:2px;border:1px dashed var(--warn);background:var(--warn-dim);}
 
     /* ── Map ── */
-    #map{background:#080d14;}
-    .leaflet-tile{filter:brightness(.5) saturate(.35) hue-rotate(200deg);}
-    .leaflet-popup-content-wrapper{background:var(--surface-2)!important;border:1px solid var(--border)!important;border-radius:var(--r)!important;box-shadow:0 8px 28px rgba(0,0,0,.6)!important;color:var(--text)!important;font-family:var(--font-mono)!important;font-size:12px!important;}
-    .leaflet-popup-tip{background:var(--surface-2)!important;}
+    #map{background:#0a0e14;position:relative;}
+    .leaflet-popup-content-wrapper{background:rgba(15,18,24,0.97)!important;border:1px solid var(--border)!important;border-radius:var(--r)!important;box-shadow:0 8px 28px rgba(0,0,0,.7)!important;color:var(--text)!important;font-family:var(--font-mono)!important;font-size:12px!important;}
+    .leaflet-popup-tip{background:rgba(15,18,24,0.97)!important;}
     .leaflet-popup-close-button{color:var(--text-dim)!important;}
+
+    /* ── Basemap Switcher ── */
+    #bm-switcher{
+      position:absolute;bottom:28px;right:10px;z-index:1000;
+      background:rgba(10,12,18,0.93);
+      border:1px solid var(--border);
+      border-radius:var(--r2);
+      padding:9px 11px;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      box-shadow:0 4px 24px rgba(0,0,0,.55);
+      min-width:178px;
+    }
+    .bm-group-label{
+      font-family:var(--font-mono);font-size:9px;color:var(--text-dim);
+      text-transform:uppercase;letter-spacing:1.3px;margin-bottom:5px;
+    }
+    .bm-divider{height:1px;background:var(--border);margin:8px 0;}
+    .bm-btns{display:flex;flex-direction:column;gap:3px;}
+    .bm-btn{
+      font-family:var(--font-mono);font-size:11px;
+      background:var(--surface-2);color:var(--text-dim);
+      border:1px solid var(--border);border-radius:4px;
+      padding:5px 9px;cursor:pointer;text-align:left;
+      transition:all var(--ease);appearance:none;white-space:nowrap;
+    }
+    .bm-btn:hover{color:var(--text-bright);border-color:var(--border-2);background:var(--surface-3);}
+    .bm-btn.active{
+      background:var(--accent-dim);border-color:var(--accent);
+      color:var(--accent);font-weight:500;
+    }
     .pop-mag{font-family:var(--font-ui);font-size:26px;font-weight:800;line-height:1;}
     .pop-mag.safe{color:var(--safe);}
     .pop-mag.mod {color:var(--warn);}
@@ -605,12 +635,87 @@ const badgePh     = $('badge-ph');
 const badgeGl     = $('badge-gl');
 const badgeHist   = $('badge-hist');
 
-// ── Map setup ──────────────────────────────────────────────
-const map = L.map('map', { center:[12, 122], zoom:6 });
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  maxZoom:18,
-}).addTo(map);
+// ── Map setup — USGS National Map + Satellite + Street tiles ─
+const map = L.map('map', { center:[12, 122], zoom:6, zoomControl:true });
+
+// All basemap tile layers
+const ALL_TILES = {
+  // ── USGS National Map (official USGS cartographic services) ──
+  imagery: L.tileLayer(
+    'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
+    { attribution:'<a href="https://www.usgs.gov/">U.S. Geological Survey</a>', maxZoom:16, maxNativeZoom:16 }
+  ),
+  topo: L.tileLayer(
+    'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}',
+    { attribution:'<a href="https://www.usgs.gov/">U.S. Geological Survey</a>', maxZoom:16, maxNativeZoom:16 }
+  ),
+  shaded: L.tileLayer(
+    'https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/tile/{z}/{y}/{x}',
+    { attribution:'<a href="https://www.usgs.gov/">U.S. Geological Survey</a>', maxZoom:16, maxNativeZoom:16 }
+  ),
+  imageryTopo: L.tileLayer(
+    'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}',
+    { attribution:'<a href="https://www.usgs.gov/">U.S. Geological Survey</a>', maxZoom:16, maxNativeZoom:16 }
+  ),
+  // ── Satellite — Esri World Imagery (high-res, global) ──
+  satellite: L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution:'Tiles © <a href="https://www.esri.com/">Esri</a> — Source: Esri, Maxar, Earthstar Geographics', maxZoom:19 }
+  ),
+  // ── Streets — OpenStreetMap (free, open, detailed road map) ──
+  streets: L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom:19, subdomains:'abc' }
+  ),
+};
+
+// Basemap metadata for the switcher UI
+const BM_META = {
+  imagery:     { label:'🛰 USGS Imagery',      group:'usgs' },
+  topo:        { label:'🗺 USGS Topo',          group:'usgs' },
+  shaded:      { label:'⛰ Shaded Relief',      group:'usgs' },
+  imageryTopo: { label:'🌐 Imagery + Topo',     group:'usgs' },
+  satellite:   { label:'🛰 Satellite (Esri)',   group:'other' },
+  streets:     { label:'🏙 Street (OSM)',       group:'other' },
+};
+
+let activeBasemap = 'imagery';
+ALL_TILES.imagery.addTo(map);
+
+// Build and inject the basemap switcher panel
+const bmSwitcher = document.createElement('div');
+bmSwitcher.id = 'bm-switcher';
+
+const usgsKeys  = Object.keys(BM_META).filter(k => BM_META[k].group === 'usgs');
+const otherKeys = Object.keys(BM_META).filter(k => BM_META[k].group === 'other');
+
+bmSwitcher.innerHTML = `
+  <div class="bm-group-label">USGS National Map</div>
+  <div class="bm-btns" id="bm-usgs">
+    ${usgsKeys.map(k => `<button class="bm-btn${k==='imagery'?' active':''}" data-bm="${k}">${BM_META[k].label}</button>`).join('')}
+  </div>
+  <div class="bm-divider"></div>
+  <div class="bm-group-label">Other Basemaps</div>
+  <div class="bm-btns" id="bm-other">
+    ${otherKeys.map(k => `<button class="bm-btn" data-bm="${k}">${BM_META[k].label}</button>`).join('')}
+  </div>`;
+
+document.getElementById('map').appendChild(bmSwitcher);
+
+bmSwitcher.querySelectorAll('.bm-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.bm;
+    if (key === activeBasemap) return;
+    map.removeLayer(ALL_TILES[activeBasemap]);
+    ALL_TILES[key].addTo(map);
+    // Re-raise markers so they stay above the new tile layer
+    Object.values(allMarkers).forEach(m => { m.remove(); m.addTo(map); });
+    volMarkers.forEach(m => { m.remove(); m.addTo(map); });
+    if (userMarker) { userMarker.remove(); userMarker.addTo(map); }
+    activeBasemap = key;
+    bmSwitcher.querySelectorAll('.bm-btn').forEach(b => b.classList.toggle('active', b.dataset.bm === key));
+  });
+});
 
 // ── Helpers ────────────────────────────────────────────────
 function magCls(m) {
