@@ -408,7 +408,7 @@
 
 <!-- ═══════════ SOURCE TABS ═══════════ -->
 <nav class="source-bar">
-  <button class="src-tab active" data-tab="ph">🇵🇭 PH Earthquakes <span class="badge" id="badge-ph">—</span></button>
+  <button class="src-tab active" data-tab="ph">🇵🇭 Earthquakes <span class="badge" id="badge-ph">—</span></button>
   <button class="src-tab" data-tab="global">🌐 Global Live <span class="badge" id="badge-gl">—</span></button>
   <button class="src-tab" data-tab="volcanoes">🌋 Volcanoes <span class="badge v" id="badge-vol">24</span></button>
   <button class="src-tab" data-tab="history">🕐 History <span class="badge h" id="badge-hist">0</span></button>
@@ -507,7 +507,7 @@
       <ul id="global-list" style="list-style:none;flex:1;position:relative;">
         <li class="loading" id="loading-gl">
           <div class="spinner"></div>
-          <span class="load-txt">Fetching global feed…</span>
+          <span class="load-txt">Fetching global feed…</span> 
         </li>
       </ul>
       <div class="legend">
@@ -568,29 +568,29 @@ const PH_BBOX = { minlat:4.5, maxlat:21.5, minlon:114.0, maxlon:127.5 };
 // ── PHIVOLCS Volcano Database (24 active, embed static data) ──
 const VOLCANOES = [
   { name:'Taal',      lat:14.002, lng:120.993, alert:1, province:'Batangas',       status:'Unrest with persistent SO₂ degassing and seismicity.',  type:'Caldera',        bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2/taal-volcano' },
-  { name:'Mayon',     lat:13.257, lng:123.685, alert:2, province:'Albay',           status:'Continuing effusive activity; lava flows on S and SE flanks.', type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2/mayon-volcano' },
-  { name:'Kanlaon',   lat:10.412, lng:123.132, alert:2, province:'Negros Occ./Or.', status:'Eruptive activity with ash venting; 4-km PDZ enforced.',   type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2/kanlaon-volcano' },
-  { name:'Bulusan',   lat:12.769, lng:124.055, alert:1, province:'Sorsogon',        status:'Hydrothermal/magmatic disturbance near Irosin Caldera.',   type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2/bulusan-volcano' },
-  { name:'Pinatubo',  lat:15.130, lng:120.350, alert:0, province:'Pampanga/Zambales',status:'No abnormal activity observed.',                           type:'Caldera',        bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Hibok-Hibok',lat:9.203, lng:124.673, alert:0, province:'Camiguin',        status:'Background seismicity and fumarolic activity.',             type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Ragang',    lat:7.680,  lng:124.500, alert:0, province:'Lanao del Sur',   status:'Low-level unrest; fumarolic activity observed.',            type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Smith',     lat:20.527, lng:121.919, alert:0, province:'Babuyan Islands', status:'No recent eruption activity.',                              type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Camiguin de Babuyanes', lat:18.833, lng:121.858, alert:0, province:'Cagayan', status:'Background activity.',                                type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Didicas',   lat:19.080, lng:122.200, alert:0, province:'Cagayan',         status:'Submarine; no current alerts.',                            type:'Submarine',      bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Babuyan Claro', lat:19.530, lng:121.940, alert:0, province:'Cagayan',     status:'Low-level fumarolic activity.',                            type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Iraya',     lat:20.467, lng:122.010, alert:0, province:'Batanes',         status:'No abnormal activity.',                                    type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Cagua',     lat:18.222, lng:122.124, alert:0, province:'Cagayan',         status:'Background seismicity.',                                   type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Musuan',    lat:7.876,  lng:125.069, alert:0, province:'Bukidnon',        status:'Fumarolic activity within normal range.',                  type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Leonard Kniaseff', lat:7.360, lng:124.140, alert:0, province:'North Cotabato', status:'No abnormal activity.',                              type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Apo',       lat:6.988,  lng:125.270, alert:0, province:'Davao del Sur',   status:'Dormant; fumaroles present.',                              type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Parker',    lat:6.110,  lng:124.890, alert:0, province:'South Cotabato',  status:'No recent unrest.',                                        type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Matutum',   lat:6.360,  lng:125.100, alert:0, province:'South Cotabato',  status:'Background levels.',                                       type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Tiaan',     lat:7.981,  lng:126.094, alert:0, province:'Agusan del Sur',  status:'No abnormal activity.',                                    type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Busa',      lat:5.930,  lng:125.250, alert:0, province:'Sarangani',       status:'No recent activity.',                                      type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Balatukan', lat:8.810,  lng:124.620, alert:0, province:'Misamis Oriental',status:'Background.',                                              type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Makaturing', lat:7.647, lng:124.320, alert:0, province:'Lanao del Sur',   status:'Low-level unrest.',                                        type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Camiguin',  lat:9.203,  lng:124.673, alert:0, province:'Camiguin',        status:'See Hibok-Hibok for updates.',                             type:'Volcanic Field', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
-  { name:'Biliran',   lat:11.516, lng:124.530, alert:0, province:'Biliran',         status:'Low-level seismicity.',                                    type:'Stratovolcano', bul:'https://www.phivolcs.dost.gov.ph/index.php/volcano-hazard/volcano-bulletin2' },
+  { name:'Mayon',     lat:13.257, lng:123.685, alert:2, province:'Albay',           status:'Continuing effusive activity; lava flows on S and SE flanks.', type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/activity-mvo?bid=13889' },
+  { name:'Kanlaon',   lat:10.412, lng:123.132, alert:2, province:'Negros Occ./Or.', status:'Eruptive activity with ash venting; 4-km PDZ enforced.',   type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/activity-kvo?bid=13887' },
+  { name:'Bulusan',   lat:12.769, lng:124.055, alert:1, province:'Sorsogon',        status:'Hydrothermal/magmatic disturbance near Irosin Caldera.',   type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Pinatubo',  lat:15.130, lng:120.350, alert:0, province:'Pampanga/Zambales',status:'No abnormal activity observed.',                           type:'Caldera',        bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Hibok-Hibok',lat:9.203, lng:124.673, alert:0, province:'Camiguin',        status:'Background seismicity and fumarolic activity.',             type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Ragang',    lat:7.680,  lng:124.500, alert:0, province:'Lanao del Sur',   status:'Low-level unrest; fumarolic activity observed.',            type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Smith',     lat:20.527, lng:121.919, alert:0, province:'Babuyan Islands', status:'No recent eruption activity.',                              type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Camiguin de Babuyanes', lat:18.833, lng:121.858, alert:0, province:'Cagayan', status:'Background activity.',                                type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Didicas',   lat:19.080, lng:122.200, alert:0, province:'Cagayan',         status:'Submarine; no current alerts.',                            type:'Submarine',      bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Babuyan Claro', lat:19.530, lng:121.940, alert:0, province:'Cagayan',     status:'Low-level fumarolic activity.',                            type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Iraya',     lat:20.467, lng:122.010, alert:0, province:'Batanes',         status:'No abnormal activity.',                                    type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Cagua',     lat:18.222, lng:122.124, alert:0, province:'Cagayan',         status:'Background seismicity.',                                   type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Musuan',    lat:7.876,  lng:125.069, alert:0, province:'Bukidnon',        status:'Fumarolic activity within normal range.',                  type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Leonard Kniaseff', lat:7.360, lng:124.140, alert:0, province:'North Cotabato', status:'No abnormal activity.',                              type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Apo',       lat:6.988,  lng:125.270, alert:0, province:'Davao del Sur',   status:'Dormant; fumaroles present.',                              type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Parker',    lat:6.110,  lng:124.890, alert:0, province:'South Cotabato',  status:'No recent unrest.',                                        type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Matutum',   lat:6.360,  lng:125.100, alert:0, province:'South Cotabato',  status:'Background levels.',                                       type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Tiaan',     lat:7.981,  lng:126.094, alert:0, province:'Agusan del Sur',  status:'No abnormal activity.',                                    type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Busa',      lat:5.930,  lng:125.250, alert:0, province:'Sarangani',       status:'No recent activity.',                                      type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Balatukan', lat:8.810,  lng:124.620, alert:0, province:'Misamis Oriental',status:'Background.',                                              type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Makaturing', lat:7.647, lng:124.320, alert:0, province:'Lanao del Sur',   status:'Low-level unrest.',                                        type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Camiguin',  lat:9.203,  lng:124.673, alert:0, province:'Camiguin',        status:'See Hibok-Hibok for updates.',                             type:'Volcanic Field', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
+  { name:'Biliran',   lat:11.516, lng:124.530, alert:0, province:'Biliran',         status:'Low-level seismicity.',                                    type:'Stratovolcano', bul:'https://wovodat.phivolcs.dost.gov.ph/bulletin/list-of-bulletin' },
 ];
 
 const ALERT_NAMES = ['Normal','Low-level Unrest','Moderate Unrest','High Unrest / Minor Eruption','Hazardous Eruption','Very Hazardous'];
